@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "851533613482",
+    "project_id": "sabeel-bfd47",
+    "storage_bucket": "sabeel-bfd47.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851533613482:android:24b123abbc0ca347f783d3",
+        "android_client_info": {
+          "package_name": "com.sabeelapp.sabeelapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcdgWKHKlA2dqC3nqG1e7Xu7fGlR76gqc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
