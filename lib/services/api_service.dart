@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
+import 'package:sabeelapp/config/app_config.dart';
 
 class ApiService {
-  static const String _baseUrl = 'http://localhost:3000/api';
   static final GetStorage _storage = GetStorage();
 
   // Headers for authenticated requests
@@ -20,8 +20,13 @@ class ApiService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final url = Uri.parse('$_baseUrl$endpoint');
+      final url = Uri.parse('${AppConfig.baseUrl}$endpoint');
       http.Response response;
+
+      if (AppConfig.shouldLogRequests) {
+        print('API Request: $method $url');
+        if (body != null) print('Request Body: ${json.encode(body)}');
+      }
 
       switch (method.toUpperCase()) {
         case 'GET':
@@ -48,6 +53,10 @@ class ApiService {
           throw Exception('Unsupported HTTP method: $method');
       }
 
+      if (AppConfig.shouldLogRequests) {
+        print('API Response: ${response.statusCode} ${response.body}');
+      }
+
       final responseData = json.decode(response.body);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -56,7 +65,9 @@ class ApiService {
         throw Exception(responseData['message'] ?? 'Request failed');
       }
     } catch (e) {
-      print('API Request Error: $e');
+      if (AppConfig.shouldLogRequests) {
+        print('API Request Error: $e');
+      }
       rethrow;
     }
   }
