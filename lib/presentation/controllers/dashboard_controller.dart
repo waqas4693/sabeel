@@ -3,7 +3,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:sabeelapp/services/ai_service.dart';
 import 'package:sabeelapp/data/models/ai_response_model.dart';
-import 'package:sabeelapp/presentation/views/response_page.dart';
+import 'package:sabeelapp/core/auth_service.dart';
 
 class DashboardController extends GetxController {
   final RxBool isDrawerOpen = true.obs;
@@ -18,6 +18,7 @@ class DashboardController extends GetxController {
 
   // --- AI Service ---
   late AIService _aiService;
+  late AuthService _authService;
   var aiResponse = Rx<AIResponse?>(null);
   var isProcessingAI = false.obs;
 
@@ -28,6 +29,7 @@ class DashboardController extends GetxController {
     super.onInit();
     _loadProgress();
     _aiService = Get.find<AIService>();
+    _authService = Get.find<AuthService>();
     textEditingController = TextEditingController(
       text: _getCurrentAnswer() ?? '',
     );
@@ -123,6 +125,30 @@ class DashboardController extends GetxController {
     }
   }
 
+  /// Reset journey state manually (clears AI response too)
+  void resetJourneyWithResponse() {
+    // Reset all journey state
+    currentMainStep.value = 0;
+    currentSubStep.value = 0;
+    answers.clear();
+
+    // Clear AI response
+    aiResponse.value = null;
+
+    // Close any open modals
+    if (showStepModal.value) {
+      closeStepModal();
+    }
+
+    // Update text controller
+    textEditingController.text = '';
+
+    // Save the reset state
+    saveProgress();
+
+    print('Journey manually reset - ready for new journey');
+  }
+
   // --- AI Processing Methods ---
 
   /// Process user's response with AI (called when journey is complete)
@@ -130,11 +156,15 @@ class DashboardController extends GetxController {
     isProcessingAI.value = true;
 
     try {
+      // Get current user ID for database storage
+      final currentUser = _authService.currentUser;
+      final userId = currentUser?.id ?? 'anonymous';
+
       // Create context for AI processing with all journey answers
       final context = {
         'step_type': 'complete_journey',
-        'user_id': 'user_${DateTime.now().millisecondsSinceEpoch}',
-        'answers': answers.value, // Pass all collected answers
+        'user_id': userId, // Use actual user ID instead of anonymous
+        'answers': answers, // Pass all collected answers
       };
 
       // Send to AI service
@@ -157,22 +187,6 @@ class DashboardController extends GetxController {
     }
   }
 
-  /// Get current step type for AI context
-  String _getCurrentStepType() {
-    switch (currentMainStep.value) {
-      case 0:
-        return 'self_reflection';
-      case 1:
-        return 'divine_signs';
-      case 2:
-        return 'talents';
-      case 3:
-        return 'purpose';
-      default:
-        return 'general';
-    }
-  }
-
   /// Get journey insight
   Future<void> getJourneyInsight() async {
     isProcessingAI.value = true;
@@ -182,7 +196,7 @@ class DashboardController extends GetxController {
         'progress': currentMainStep.value,
         'answers_count': answers.length,
         'current_step': currentMainStep.value,
-        'answers': answers.value, // Pass all collected answers
+        'answers': answers, // Pass all collected answers
       };
 
       final insight = await _aiService.getJourneyInsight(journeyData);

@@ -33,6 +33,56 @@ class _OnboardingViewState extends State<OnboardingView> {
   // State variables
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _obscurePassword = true;
+  final _formKey = GlobalKey<FormState>();
+
+  /// Validate email format
+  String? _validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  /// Validate password for sign-up
+  String? _validateSignUpPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    // Optional: Add more complex password requirements
+    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(value)) {
+      return 'Password must contain uppercase, lowercase, and number';
+    }
+    return null;
+  }
+
+  /// Validate password for sign-in
+  String? _validateSignInPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    return null;
+  }
+
+  /// Validate display name
+  String? _validateDisplayName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Name is required';
+    }
+    if (value.trim().length > 50) {
+      return 'Name cannot exceed 50 characters';
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -103,12 +153,8 @@ class _OnboardingViewState extends State<OnboardingView> {
   }
 
   Future<void> _signUp() async {
-    if (_nameController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty ||
-        _passwordController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please fill in all fields';
-      });
+    // Validate form first
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -144,11 +190,8 @@ class _OnboardingViewState extends State<OnboardingView> {
   }
 
   Future<void> _signIn() async {
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please fill in all fields';
-      });
+    // Validate form first
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -442,241 +485,298 @@ class _OnboardingViewState extends State<OnboardingView> {
   }
 
   Widget _buildSignUpTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Create Your Account',
-          style: TextStyle(
-            fontSize: 28,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Begin your personal spiritual journey',
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 24),
-        TextField(
-          controller: _nameController,
-          keyboardType: TextInputType.name,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(
-            hintText: 'Your full name',
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Create Your Account',
+            style: TextStyle(
+              fontSize: 28,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-            hintStyle: TextStyle(color: Colors.white54),
           ),
-          style: TextStyle(color: Colors.white),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            hintText: 'your@email.com',
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            hintStyle: TextStyle(color: Colors.white54),
+          const SizedBox(height: 8),
+          Text(
+            'Begin your personal spiritual journey',
+            style: TextStyle(color: Colors.white70),
           ),
-          style: TextStyle(color: Colors.white),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _passwordController,
-          obscureText: true,
-          decoration: InputDecoration(
-            hintText: 'Password (at least 6 characters)',
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            hintStyle: TextStyle(color: Colors.white54),
-          ),
-          style: TextStyle(color: Colors.white),
-        ),
-        const SizedBox(height: 24),
-        if (_errorMessage.isNotEmpty && _signupTabIndex == 0)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1EAEDB).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF1EAEDB).withOpacity(0.3),
-                width: 1,
+          const SizedBox(height: 24),
+          TextFormField(
+            controller: _nameController,
+            keyboardType: TextInputType.name,
+            textCapitalization: TextCapitalization.words,
+            validator: _validateDisplayName,
+            decoration: InputDecoration(
+              hintText: 'Your full name',
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              hintStyle: TextStyle(color: Colors.white54),
+              errorStyle: const TextStyle(
+                color: Color(0xFF1EAEDB),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: const Color(0xFF1EAEDB),
-                  size: 18,
+            style: TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: _validateEmail,
+            decoration: InputDecoration(
+              hintText: 'your@email.com',
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              hintStyle: TextStyle(color: Colors.white54),
+              errorStyle: const TextStyle(
+                color: Color(0xFF1EAEDB),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            style: TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            validator: _validateSignUpPassword,
+            decoration: InputDecoration(
+              hintText: 'Password (at least 6 characters)',
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              hintStyle: TextStyle(color: Colors.white54),
+              errorStyle: const TextStyle(
+                color: Color(0xFF1EAEDB),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.white54,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(
-                      color: Color(0xFF1EAEDB),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+            ),
+            style: TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 24),
+          if (_errorMessage.isNotEmpty && _signupTabIndex == 0)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1EAEDB).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF1EAEDB).withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: const Color(0xFF1EAEDB),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _errorMessage,
+                      style: const TextStyle(
+                        color: Color(0xFF1EAEDB),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+          GradientActionButton(
+            text: _isLoading ? 'Creating Account...' : 'Begin Your Path',
+            onPressed: _isLoading ? null : _signUp,
           ),
-        GradientActionButton(
-          text: _isLoading ? 'Creating Account...' : 'Begin Your Path',
-          onPressed: _isLoading ? null : _signUp,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildSignInTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Welcome Back',
-          style: TextStyle(
-            fontSize: 28,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Continue your spiritual journey',
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 24),
-        // Email Field
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Email',
-            labelStyle: const TextStyle(color: Colors.white70),
-            hintText: 'your@email.com',
-            hintStyle: const TextStyle(color: Colors.white38),
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF1EAEDB)),
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Welcome Back',
+            style: TextStyle(
+              fontSize: 28,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        // Password Field
-        TextField(
-          controller: _passwordController,
-          obscureText: true,
-          textInputAction: TextInputAction.done,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Password',
-            labelStyle: const TextStyle(color: Colors.white70),
-            hintText: '********',
-            hintStyle: const TextStyle(color: Colors.white38),
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF1EAEDB)),
-            ),
-            suffixIcon: const Icon(Icons.lock, color: Colors.white38),
+          const SizedBox(height: 8),
+          Text(
+            'Continue your spiritual journey',
+            style: TextStyle(color: Colors.white70),
           ),
-        ),
-        const SizedBox(height: 8),
-        // Forgot Password
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {
-              Get.snackbar(
-                'Coming Soon',
-                'Password reset functionality will be available soon.',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            child: const Text(
-              'Forgot password?',
-              style: TextStyle(color: Colors.white54),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        // Error Message for Sign In
-        if (_errorMessage.isNotEmpty && _signupTabIndex == 1)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1EAEDB).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF1EAEDB).withOpacity(0.3),
-                width: 1,
+          const SizedBox(height: 24),
+          // Email Field
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            validator: _validateEmail,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              labelText: 'Email',
+              labelStyle: const TextStyle(color: Colors.white70),
+              hintText: 'your@email.com',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF1EAEDB)),
+              ),
+              errorStyle: const TextStyle(
+                color: Color(0xFF1EAEDB),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: const Color(0xFF1EAEDB),
-                  size: 18,
+          ),
+          const SizedBox(height: 16),
+          // Password Field
+          TextFormField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            validator: _validateSignInPassword,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              labelText: 'Password',
+              labelStyle: const TextStyle(color: Colors.white70),
+              hintText: '********',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF1EAEDB)),
+              ),
+              errorStyle: const TextStyle(
+                color: Color(0xFF1EAEDB),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.white38,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(
-                      color: Color(0xFF1EAEDB),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
             ),
           ),
-        const SizedBox(height: 16),
-        // Sign In Button
-        GradientActionButton(
-          text: _isLoading ? 'Signing In...' : 'Sign In',
-          onPressed: _isLoading ? null : _signIn,
-        ),
-      ],
+          const SizedBox(height: 8),
+          // Forgot Password
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                Get.snackbar(
+                  'Coming Soon',
+                  'Password reset functionality will be available soon.',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+              },
+              child: const Text(
+                'Forgot password?',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Error Message for Sign In
+          if (_errorMessage.isNotEmpty && _signupTabIndex == 1)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1EAEDB).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF1EAEDB).withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: const Color(0xFF1EAEDB),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _errorMessage,
+                      style: const TextStyle(
+                        color: Color(0xFF1EAEDB),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 16),
+          // Sign In Button
+          GradientActionButton(
+            text: _isLoading ? 'Signing In...' : 'Sign In',
+            onPressed: _isLoading ? null : _signIn,
+          ),
+        ],
+      ),
     );
   }
 

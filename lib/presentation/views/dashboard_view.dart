@@ -4,9 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sabeelapp/core/auth_service.dart';
 import 'package:sabeelapp/presentation/views/quran_view.dart';
+import 'package:sabeelapp/presentation/views/profile_view.dart';
 import 'package:sabeelapp/presentation/widgets/glow_pulse_logo.dart';
 import 'package:sabeelapp/presentation/widgets/gradient_pill_button.dart';
 import 'package:sabeelapp/presentation/controllers/dashboard_controller.dart';
+import 'package:sabeelapp/presentation/controllers/profile_controller.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -219,6 +221,10 @@ class DashboardView extends GetView<DashboardController> {
               Get.offAllNamed('/home');
             } else if (index == 2) {
               Get.to(() => const QuranView());
+            } else if (index == 3) {
+              // Profile/History page
+              Get.put(ProfileController());
+              Get.to(() => const ProfileView());
             } else {
               controller.selectIndex(index);
               Get.back(); // Close drawer after selection
@@ -245,10 +251,6 @@ class DashboardView extends GetView<DashboardController> {
           ),
         );
       case 3:
-        return const Center(
-          child: Text('Resources View', style: TextStyle(color: Colors.white)),
-        );
-      case 4:
         return const Center(
           child: Text('Profile View', style: TextStyle(color: Colors.white)),
         );

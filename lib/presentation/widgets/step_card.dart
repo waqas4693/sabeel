@@ -44,12 +44,10 @@ class _StepCardState extends State<StepCard>
       parent: _controller,
       curve: Curves.easeInOutCubic,
     );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
-    );
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+        );
     _topLineAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
@@ -111,7 +109,7 @@ class _StepCardState extends State<StepCard>
                   children: [
                     // Card background
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(8),
                       child: Container(
                         color: Colors.white.withOpacity(0.1),
                         padding: const EdgeInsets.symmetric(
@@ -217,35 +215,52 @@ class _BorderLinesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint =
-        Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFF8b5cf6), Color(0xFFd946ef), Color(0xFFf97316)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-          ..strokeWidth = 3
-          ..style = PaintingStyle.stroke;
-    // Top line: from center to both ends
+    // Define inset distance (adjust this value to control how far inside the lines are)
+    const double inset = 4.0;
+
+    final Paint paint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF8b5cf6), Color(0xFFd946ef), Color(0xFFf97316)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+
+    // Top line: from center to both ends (moved inside by inset)
     if (topProgress > 0) {
+      final double topY = inset; // Move line down from top edge
+      final double centerX = size.width * 0.5;
+      final double lineLength =
+          (size.width * 0.5) - inset; // Adjust line length for inset
+
       // Left from center
       canvas.drawLine(
-        Offset(size.width * 0.5, 0),
-        Offset(size.width * 0.5 - (size.width * 0.5 - 1) * topProgress, 0),
+        Offset(centerX, topY),
+        Offset(centerX - lineLength * topProgress, topY),
         paint,
       );
       // Right from center
       canvas.drawLine(
-        Offset(size.width * 0.5, 0),
-        Offset(size.width * 0.5 + (size.width * 0.5 - 1) * topProgress, 0),
+        Offset(centerX, topY),
+        Offset(centerX + lineLength * topProgress, topY),
         paint,
       );
     }
-    // Right line: from top right to bottom right
+
+    // Right line: from top right to bottom right (moved inside by inset)
     if (rightProgress > 0) {
+      final double rightX =
+          size.width - inset; // Move line left from right edge
+      final double lineHeight =
+          size.height - (inset * 2); // Adjust line height for inset
+
       canvas.drawLine(
-        Offset(size.width - 1, 0),
-        Offset(size.width - 1, size.height * rightProgress),
+        Offset(rightX, inset), // Start from inset distance from top
+        Offset(
+          rightX,
+          inset + lineHeight * rightProgress,
+        ), // End at calculated position
         paint,
       );
     }
@@ -257,4 +272,3 @@ class _BorderLinesPainter extends CustomPainter {
         rightProgress != oldDelegate.rightProgress;
   }
 }
- 

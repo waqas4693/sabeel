@@ -1,5 +1,4 @@
 import express from 'express';
-import { validateSignUp, validateSignIn, handleValidationErrors } from '../middleware/validation.js';
 import { authenticateToken } from '../middleware/auth.js';
 import authController from '../controllers/authController.js';
 
@@ -8,12 +7,12 @@ const router = express.Router();
 // @route   POST /api/auth/signup
 // @desc    Register a new user
 // @access  Public
-router.post('/signup', validateSignUp, handleValidationErrors, authController.signUp);
+router.post('/signup', authController.signUp);
 
 // @route   POST /api/auth/signin
 // @desc    Sign in user
 // @access  Public
-router.post('/signin', validateSignIn, handleValidationErrors, authController.signIn);
+router.post('/signin', authController.signIn);
 
 // @route   GET /api/auth/me
 // @desc    Get current user

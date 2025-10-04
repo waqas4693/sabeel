@@ -2,8 +2,41 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:sabeelapp/presentation/controllers/sign_in_controller.dart';
 
-class SignInDialog extends StatelessWidget {
+class SignInDialog extends StatefulWidget {
   const SignInDialog({super.key});
+
+  @override
+  State<SignInDialog> createState() => _SignInDialogState();
+}
+
+class _SignInDialogState extends State<SignInDialog> {
+  bool _obscurePassword = true;
+  final _formKey = GlobalKey<FormState>();
+
+  /// Validate email format
+  String? _validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  /// Validate password
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,14 +96,16 @@ class SignInDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Form(
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Email Field
-                    TextField(
+                    TextFormField(
                       controller: controller.emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
+                      validator: _validateEmail,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Email',
@@ -89,14 +124,20 @@ class SignInDialog extends StatelessWidget {
                             color: Color(0xFF1EAEDB),
                           ),
                         ),
+                        errorStyle: const TextStyle(
+                          color: Color(0xFF1EAEDB),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     // Password Field
-                    TextField(
+                    TextFormField(
                       controller: controller.passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       textInputAction: TextInputAction.done,
+                      validator: _validatePassword,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Password',
@@ -115,9 +156,23 @@ class SignInDialog extends StatelessWidget {
                             color: Color(0xFF1EAEDB),
                           ),
                         ),
-                        suffixIcon: const Icon(
-                          Icons.lock,
-                          color: Colors.white38,
+                        errorStyle: const TextStyle(
+                          color: Color(0xFF1EAEDB),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.white38,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
                       ),
                     ),
@@ -195,6 +250,11 @@ class SignInDialog extends StatelessWidget {
                         onPressed: controller.isLoading.value
                             ? null
                             : () async {
+                                // Validate form first
+                                if (!_formKey.currentState!.validate()) {
+                                  return;
+                                }
+
                                 print('Sign in button pressed');
                                 final success = await controller.signIn();
                                 print('Authentication result: $success');

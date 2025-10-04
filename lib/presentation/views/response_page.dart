@@ -176,33 +176,67 @@ class ResponsePage extends GetView<DashboardController> {
                   const SizedBox(height: 24),
 
                   // Action buttons
-                  Row(
+                  Column(
                     children: [
-                      Expanded(
-                        child: GradientActionButton(
-                          text: 'Back to Journey',
-                          onPressed: () => Get.back(),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 15,
+                      // Primary action buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GradientActionButton(
+                              text: 'Back to Journey',
+                              onPressed: () => Get.back(),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 15,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: GradientActionButton(
+                              text: 'Share',
+                              onPressed: () {
+                                Get.snackbar(
+                                  'Share',
+                                  'Share functionality coming soon!',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: const Color(0xFF1EAEDB),
+                                  colorText: Colors.white,
+                                );
+                              },
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 15,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
+                      const SizedBox(height: 16),
+                      // Begin new journey button
+                      SizedBox(
+                        width: double.infinity,
                         child: GradientActionButton(
-                          text: 'Share',
+                          text: 'Begin Journey Again',
+                          icon: const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           onPressed: () {
+                            // Reset journey and go back to dashboard
+                            controller.resetJourneyWithResponse();
+                            Get.back();
                             Get.snackbar(
-                              'Share',
-                              'Share functionality coming soon!',
+                              'Journey Reset',
+                              'You can now begin a new spiritual journey!',
                               snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: const Color(0xFF1EAEDB),
                               colorText: Colors.white,
                             );
                           },
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
+                            horizontal: 20,
                             vertical: 15,
                           ),
                         ),
